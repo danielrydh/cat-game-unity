@@ -8,8 +8,11 @@ using UnityStandardAssets.CrossPlatformInput;
 public class Player : MonoBehaviour {
 
     [SerializeField] float runSpeed = 5f;
-    [SerializeField] float jumpSpeed = 10f;
+    
+    [SerializeField] float firstJumpSpeed = 20f;
+    [SerializeField] float secondJumpSpeed = 5f;
     private bool canJump = true;
+    private float jumpSpeed;
 
     Rigidbody2D myRigidbody;
     Animator myAnimator;
@@ -22,6 +25,7 @@ public class Player : MonoBehaviour {
         myRigidbody = GetComponent<Rigidbody2D>();
         myAnimator = GetComponent<Animator>();
         myColider = GetComponent<Collider2D>();
+        jumpSpeed = firstJumpSpeed;
 	}
 	
 	// Update is called once per frame
@@ -30,7 +34,6 @@ public class Player : MonoBehaviour {
         Jump();
         Landing();
         FlipSprite();
-		
 	}
 
     private void Run()
@@ -46,23 +49,30 @@ public class Player : MonoBehaviour {
     }
 
     private void Jump()
-
     {
+        bool jumped = CrossPlatformInputManager.GetButtonDown("Jump");
+        bool grounded = myColider.IsTouchingLayers(LayerMask.GetMask("Ground"));
 
 
-        
-        if (myColider.IsTouchingLayers(LayerMask.GetMask("Ground"))) { canJump = true; }
-        if (CrossPlatformInputManager.GetButtonDown("Jump") && canJump)
+        if ( grounded )
         {
-          
-            myAnimator.SetBool("Landed", false);
-            Vector2 jumpVelocity = new Vector2(0f, jumpSpeed);
-            myRigidbody.velocity += jumpVelocity;
-            bool playerHasVerticaltalSpeed = Mathf.Abs(myRigidbody.velocity.y) > Mathf.Epsilon;
-            myAnimator.SetBool("Jumping", playerHasVerticaltalSpeed);
-            canJump = false;
-
+            canJump = true;
         }
+
+        if ( jumped )
+        {
+            if ( canJump )
+            {
+                Vector2 jumpVelocity = new Vector2(0f, jumpSpeed);
+                myRigidbody.velocity += jumpVelocity;
+                bool playerHasVerticaltalSpeed = Mathf.Abs(myRigidbody.velocity.y) > Mathf.Epsilon;
+                myAnimator.SetBool("Jumping", playerHasVerticaltalSpeed);
+                canJump = false;
+
+                jumpSpeed = secondJumpSpeed;
+            }
+        }
+        
     }
 
     private void Landing()
@@ -71,6 +81,8 @@ public class Player : MonoBehaviour {
         {
             myAnimator.SetBool("Landed", true);
             myAnimator.SetBool("Jumping", false);
+
+            jumpSpeed = firstJumpSpeed;
 
         }
     }
