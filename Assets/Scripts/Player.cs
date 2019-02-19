@@ -63,6 +63,7 @@ public class Player : MonoBehaviour {
         {
             if ( canJump )
             {
+                myAnimator.SetBool("Landed", false);
                 Vector2 jumpVelocity = new Vector2(0f, jumpSpeed);
                 myRigidbody.velocity += jumpVelocity;
                 bool playerHasVerticaltalSpeed = Mathf.Abs(myRigidbody.velocity.y) > Mathf.Epsilon;
@@ -74,6 +75,8 @@ public class Player : MonoBehaviour {
         }
         
     }
+
+
 
     private void Landing()
     {
