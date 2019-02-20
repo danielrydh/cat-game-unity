@@ -11,6 +11,7 @@ public class Player : MonoBehaviour {
     
     [SerializeField] float firstJumpSpeed = 20f;
     [SerializeField] float secondJumpSpeed = 5f;
+    [SerializeField] float downSpeed = -20f;
     private bool canJump = true;
     private float jumpSpeed;
 
@@ -32,6 +33,7 @@ public class Player : MonoBehaviour {
 	void Update () {
         Run();
         Jump();
+        Down();
         Landing();
         FlipSprite();
 	}
@@ -77,13 +79,30 @@ public class Player : MonoBehaviour {
     }
 
 
+    private void Down()
+    {
+        bool down = CrossPlatformInputManager.GetButtonDown("Vertical");
+        bool playerHasVerticaltalSpeed = Mathf.Abs(myRigidbody.velocity.y) > Mathf.Epsilon;
+
+        if (playerHasVerticaltalSpeed && down)
+        {
+            myAnimator.SetBool("Down", true);
+            myAnimator.SetBool("Jumping", false);
+            Vector2 downVelocity = new Vector2(0f, downSpeed);
+            myRigidbody.velocity = downVelocity;
+        }
+
+    }
+
+
 
     private void Landing()
     {
-        if (myAnimator.GetBool("Jumping") && myRigidbody.velocity.y == 0)
+        if (myAnimator.GetBool("Jumping") && myRigidbody.velocity.y == 0 || myAnimator.GetBool("Down") && myRigidbody.velocity.y == 0)
         {
             myAnimator.SetBool("Landed", true);
             myAnimator.SetBool("Jumping", false);
+            myAnimator.SetBool("Down", false);
 
             jumpSpeed = firstJumpSpeed;
 
