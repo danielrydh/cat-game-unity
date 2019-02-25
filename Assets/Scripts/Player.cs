@@ -2,10 +2,13 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityStandardAssets.CrossPlatformInput;
+using UnityEngine.SceneManagement;
 
 
 
 public class Player : MonoBehaviour {
+
+    
 
     [SerializeField] float runSpeed = 5f;
     
@@ -36,21 +39,19 @@ public class Player : MonoBehaviour {
         Down();
         Landing();
         FlipSprite();
+        Win();
 	}
 
-    private void Run()
+    public void Run()
     {   
-
         float controlThrow = CrossPlatformInputManager.GetAxis("Horizontal");
         Vector2 playerVelocity = new Vector2(controlThrow * runSpeed, myRigidbody.velocity.y);
         myRigidbody.velocity = playerVelocity;
         bool playerHasHorizontalSpeed = Mathf.Abs(myRigidbody.velocity.x) > Mathf.Epsilon;
         myAnimator.SetBool("Running", playerHasHorizontalSpeed);
-       
-        
     }
 
-    private void Jump()
+    public void Jump()
     {
         bool jumped = CrossPlatformInputManager.GetButtonDown("Jump");
         bool grounded = myColider.IsTouchingLayers(LayerMask.GetMask("Ground"));
@@ -79,7 +80,7 @@ public class Player : MonoBehaviour {
     }
 
 
-    private void Down()
+    public void Down()
     {
         bool down = CrossPlatformInputManager.GetButtonDown("Vertical");
         bool playerHasVerticaltalSpeed = Mathf.Abs(myRigidbody.velocity.y) > Mathf.Epsilon;
@@ -116,5 +117,19 @@ public class Player : MonoBehaviour {
         {
             transform.localScale = new Vector2(Mathf.Sign(myRigidbody.velocity.x), 1f);
         }
+    }
+    
+    private void Win()
+    {
+        
+        bool EnemyHead = myColider.IsTouchingLayers(LayerMask.GetMask("EnemyHead"));
+        var down = myAnimator.GetBool("Down");
+
+        if (EnemyHead && down)
+        {
+            var currentSceneIndex = SceneManager.GetActiveScene().buildIndex;
+            SceneManager.LoadScene(currentSceneIndex + 1);
+        }
+        
     }
 }

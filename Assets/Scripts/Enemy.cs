@@ -1,11 +1,12 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityStandardAssets.CrossPlatformInput;
+using UnityEngine.SceneManagement;
 
 public class Enemy : MonoBehaviour
 {
     [SerializeField] float runSpeed = 5f;
+    [SerializeField] float downSpeed = -20f;
 
     [SerializeField] float firstJumpSpeed = 20f;
     [SerializeField] float secondJumpSpeed = 5f;
@@ -15,6 +16,8 @@ public class Enemy : MonoBehaviour
     Rigidbody2D myRigidbody;
     Animator myAnimator;
     Collider2D myColider;
+    public GameObject player;
+    public Transform target;
 
 
 
@@ -25,41 +28,71 @@ public class Enemy : MonoBehaviour
         myAnimator = GetComponent<Animator>();
         myColider = GetComponent<Collider2D>();
         jumpSpeed = firstJumpSpeed;
+        player = GameObject.Find("Player");
+        target = player.GetComponent<Transform>();
     }
 
     // Update is called once per frame
     void Update()
     {
-        Run();
+        //Down();
+        RunAi();
         Jump();
         Landing();
         FlipSprite();
+        Win();
+        
     }
 
-    private void Run()
+    private void RunAi()
     {
+        if (target.position.x == transform.position.x)
+        {
+            return;
+        }
+            else if (target.position.x < transform.position.x)
+        {
+            Run(-1);
+        } else if (target.position.x > transform.position.x)
+        {
+            Run(1);
+        }
 
-        float controlThrow = CrossPlatformInputManager.GetAxis("Horizontal");
-        Vector2 playerVelocity = new Vector2(controlThrow * runSpeed, myRigidbody.velocity.y);
-        myRigidbody.velocity = playerVelocity;
-        bool playerHasHorizontalSpeed = Mathf.Abs(myRigidbody.velocity.x) > Mathf.Epsilon;
-        myAnimator.SetBool("Running", playerHasHorizontalSpeed);
+
 
 
     }
 
-    private void Jump()
+    private void Run(int v)
+        
     {
-        bool jumped = CrossPlatformInputManager.GetButtonDown("Jump");
+        if (target.position.y < transform.position.y && Vector2.Distance(transform.position, transform.position) < 1)
+        {
+            Vector2 playerVelocity = new Vector2(v * runSpeed, myRigidbody.velocity.y);
+            myRigidbody.velocity = playerVelocity;
+            bool playerHasHorizontalSpeed = Mathf.Abs(myRigidbody.velocity.x) > Mathf.Epsilon;
+            myAnimator.SetBool("Running", playerHasHorizontalSpeed);
+        } else
+        {
+            Vector2 playerVelocity = new Vector2(-v * runSpeed, myRigidbody.velocity.y);
+            myRigidbody.velocity = playerVelocity;
+            bool playerHasHorizontalSpeed = Mathf.Abs(myRigidbody.velocity.x) > Mathf.Epsilon;
+            myAnimator.SetBool("Running", playerHasHorizontalSpeed);
+        }
+
+    }
+
+    public void Jump()
+    {
+        
         bool grounded = myColider.IsTouchingLayers(LayerMask.GetMask("Ground"));
-
 
         if (grounded)
         {
             canJump = true;
         }
 
-        if (jumped)
+        if (Vector2.Distance(transform.position, transform.position) < 3)
         {
             if (canJump)
             {
@@ -76,7 +109,16 @@ public class Enemy : MonoBehaviour
 
     }
 
-
+    private void JumpOrDown()
+    {
+        if (Vector2.Distance(transform.position, transform.position) < 0.5)
+        {
+            Down();
+        } else if (Vector2.Distance(transform.position, transform.position) < 3)
+        {
+            Jump();
+        }
+    }
 
     private void Landing()
     {
@@ -90,6 +132,21 @@ public class Enemy : MonoBehaviour
         }
     }
 
+    public void Down()
+    {
+ 
+        bool playerHasVerticaltalSpeed = Mathf.Abs(myRigidbody.velocity.y) > Mathf.Epsilon;
+
+        if (playerHasVerticaltalSpeed && target.position.y == transform.position.y)
+        {
+            myAnimator.SetBool("Down", true);
+            myAnimator.SetBool("Jumping", false);
+            Vector2 downVelocity = new Vector2(0f, downSpeed);
+            myRigidbody.velocity = downVelocity;
+        }
+
+    }
+
     private void FlipSprite()
     {
         bool playerHasHorizontalSpeed = Mathf.Abs(myRigidbody.velocity.x) > Mathf.Epsilon;
@@ -97,5 +154,19 @@ public class Enemy : MonoBehaviour
         {
             transform.localScale = new Vector2(Mathf.Sign(myRigidbody.velocity.x), 1f);
         }
+    }
+
+    private void Win()
+    {
+
+        bool EnemyHead = myColider.IsTouchingLayers(LayerMask.GetMask("EnemyHead"));
+        var down = myAnimator.GetBool("Down");
+
+        if (EnemyHead)
+        {
+            var currentSceneIndex = SceneManager.GetActiveScene().buildIndex;
+            SceneManager.LoadScene(currentSceneIndex + 2);
+        }
+
     }
 }
