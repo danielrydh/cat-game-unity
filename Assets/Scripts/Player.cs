@@ -72,6 +72,7 @@ public class Player : MonoBehaviour {
                 bool playerHasVerticaltalSpeed = Mathf.Abs(myRigidbody.velocity.y) > Mathf.Epsilon;
                 myAnimator.SetBool("Jumping", playerHasVerticaltalSpeed);
                 canJump = false;
+                GetComponent<AudioSource>().Play();
 
                 jumpSpeed = secondJumpSpeed;
             }
