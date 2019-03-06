@@ -4,6 +4,7 @@ import React, { Component } from 'react';
 
 import Unity, { UnityContent } from "react-unity-webgl";
 
+
 class Battle extends Component {
   constructor(props) {
     super(props);
@@ -24,7 +25,6 @@ class Battle extends Component {
       })
     })
   }
-
 
 
   render() {
